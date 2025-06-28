@@ -194,6 +194,16 @@ function importFromJsonFile(event) {
             alert('Error importing quotes: ' + error.message);
         }
     };
+    function exportToJson() {
+  const data = JSON.stringify(quotes, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'quotes.json';
+  a.click();
+}
+    <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
     
     fileReader.readAsText(file);
 }
