@@ -526,6 +526,16 @@ async function syncWithServer() {
 async function syncQuotes() { /* ... */ }
 // Update all references
     
+    async function fetchQuotesFromServer() {
+    const response = await fetch(`${API_URL}?_limit=5`);
+    const serverQuotes = await response.json();
+    return serverQuotes.map(post => ({
+        text: post.title,
+        category: `Server-${post.userId}`,
+        serverId: post.id,
+        timestamp: Date.now()
+    }));
+}
     saveQuotes();
     textInput.value = '';
     categoryInput.value = '';
