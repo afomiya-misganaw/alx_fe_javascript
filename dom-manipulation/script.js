@@ -483,6 +483,26 @@ function addQuote() {
         category: newCategory,
         timestamp: Date.now()
     });
+    async function fetchQuotesFromServer() {
+  const response = await fetch(`${API_URL}?_limit=5`);
+  const serverQuotes = await response.json();
+  return serverQuotes.map(post => ({
+    text: post.title,
+    category: `Server-${post.userId}`,
+    serverId: post.id,
+    timestamp: Date.now()
+  }));
+}
+
+async function syncWithServer() {
+  try {
+    const formattedServerQuotes = await fetchQuotesFromServer();
+    checkForConflicts(formattedServerQuotes);
+    lastSyncTime = Date.now();
+  } catch (error) {
+    console.error('Sync failed:', error);
+  }
+}
     async function postQuotesToServer() {
   try {
     const newQuotes = quotes.filter(q => !q.serverId);
@@ -502,6 +522,9 @@ function addQuote() {
     console.error('Post failed:', error);
   }
 }
+    // Rename:
+async function syncQuotes() { /* ... */ }
+// Update all references
     
     saveQuotes();
     textInput.value = '';
