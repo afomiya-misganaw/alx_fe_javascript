@@ -483,6 +483,25 @@ function addQuote() {
         category: newCategory,
         timestamp: Date.now()
     });
+    async function postQuotesToServer() {
+  try {
+    const newQuotes = quotes.filter(q => !q.serverId);
+    for (const quote of newQuotes) {
+      await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          title: quote.text,
+          userId: quote.category.replace('Server-', ''),
+        }),
+        headers: {
+          'Content-type': 'application/json',
+        },
+      });
+    }
+  } catch (error) {
+    console.error('Post failed:', error);
+  }
+}
     
     saveQuotes();
     textInput.value = '';
