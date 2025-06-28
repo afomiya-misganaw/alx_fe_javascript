@@ -53,6 +53,22 @@ function saveQuotes() {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(quotes));
 }
 
+function populateCategories() {
+  const categories = [...new Set(quotes.map(quote => quote.category))];
+  categoryFilter.innerHTML = '<option value="all">All Categories</option>';
+  categories.forEach(category => {
+    const option = document.createElement('option');
+    option.value = category;
+    option.textContent = category;
+    categoryFilter.appendChild(option);
+  });
+}
+
+function updateCategoryFilter() {
+  populateCategories();
+  restoreLastFilter();
+  updateQuoteCount();
+}
 // Update the category filter dropdown
 function updateCategoryFilter() {
     // Get all unique categories
