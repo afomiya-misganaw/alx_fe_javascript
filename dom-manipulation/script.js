@@ -267,3 +267,4 @@ function clearLocalStorage() {
         updateQuoteCount();
     }
 }
+
