@@ -401,6 +401,26 @@ function checkForConflicts(serverQuotes) {
     updateCategoryFilter();
     updateDisplay();
 }
+async function fetchQuotesFromServer() {
+  const response = await fetch(`${API_URL}?_limit=5`);
+  const serverQuotes = await response.json();
+  return serverQuotes.map(post => ({
+    text: post.title,
+    category: `Server-${post.userId}`,
+    serverId: post.id,
+    timestamp: Date.now()
+  }));
+}
+
+async function syncWithServer() {
+  try {
+    const formattedServerQuotes = await fetchQuotesFromServer();
+    checkForConflicts(formattedServerQuotes);
+    lastSyncTime = Date.now();
+  } catch (error) {
+    console.error('Sync failed:', error);
+  }
+}
 
 function showConflictUI(conflicts) {
     const conflictDetailsEl = document.getElementById('conflictDetails');
