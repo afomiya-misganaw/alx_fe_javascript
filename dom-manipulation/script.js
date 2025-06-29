@@ -559,4 +559,148 @@ async function addQuote() {
   // ... existing code ...
   await postQuotesToServer(); // Sync new quote immediately
 }
+// mock-server.js (run this separately with Node.js)
+const express = require('express');
+const app = express();
+const port = 3001;
+
+let serverQuotes = [
+  { id: 1, text: "The only limit is your imagination", category: "Inspiration", timestamp: Date.now() },
+  { id: 2, text: "Learn from yesterday, live for today", category: "Wisdom", timestamp: Date.now() }
+];
+
+app.use(express.json());
+
+// GET all quotes
+app.get('/api/quotes', (req, res) => {
+  res.json(serverQuotes);
+});
+
+// POST new quote
+app.post('/api/quotes', (req, res) => {
+  const newQuote = {
+    id: serverQuotes.length + 1,
+    ...req.body,
+    timestamp: Date.now()
+  };
+  serverQuotes.push(newQuote);
+  res.status(201).json(newQuote);
+});
+
+// PUT update quote
+app.put('/api/quotes/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const index = serverQuotes.findIndex(q => q.id === id);
+  
+  if (index === -1) return res.status(404).send('Quote not found');
+  
+  serverQuotes[index] = { ...serverQuotes[index], ...req.body, timestamp: Date.now() };
+  res.json(serverQuotes[index]);
+});
+
+app.listen(port, () => {
+  console.log(`Mock API server running at http://localhost:${port}`);
+});
+// Configuration
+const API_BASE_URL = 'http://localhost:3001/api';
+const SYNC_INTERVAL = 30000; // 30 seconds
+
+// Fetch quotes from mock API
+async function fetchQuotesFromServer() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/quotes`);
+    if (!response.ok) throw new Error('Failed to fetch quotes');
+    return await response.json();
+  } catch (error) {
+    console.error('Fetch error:', error);
+    showNotification('Failed to fetch quotes', 'error');
+    return [];
+  }
+}
+
+// Post quotes to mock API
+async function postQuotesToServer() {
+  const unsyncedQuotes = quotes.filter(q => !q.synced);
+  
+  for (const quote of unsyncedQuotes) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/quotes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: quote.text,
+          category: quote.category
+        })
+      });
+      
+      if (response.ok) {
+        const serverQuote = await response.json();
+        // Update local quote with server ID
+        const index = quotes.findIndex(q => q === quote);
+        quotes[index] = { ...quote, id: serverQuote.id, synced: true };
+      }
+    } catch (error) {
+      console.error('Post error:', error);
+    }
+  }
+}
+
+// Sync function with conflict resolution
+async function syncQuotes() {
+  try {
+    showNotification('Syncing with server...', 'info');
+    
+    // Get server updates
+    const serverQuotes = await fetchQuotesFromServer();
+    
+    // Check for conflicts and updates
+    checkForConflicts(serverQuotes);
+    
+    // Send local updates
+    await postQuotesToServer();
+    
+    // Save and update UI
+    saveQuotes();
+    updateCategoryFilter();
+    updateDisplay();
+    
+    showNotification('Sync completed', 'success');
+  } catch (error) {
+    console.error('Sync error:', error);
+    showNotification('Sync failed', 'error');
+  }
+}
+
+// Conflict detection
+function checkForConflicts(serverQuotes) {
+  const conflicts = [];
+  
+  serverQuotes.forEach(serverQuote => {
+    const localQuote = quotes.find(q => q.id === serverQuote.id);
+    
+    if (localQuote) {
+      // Conflict if server has newer version
+      if (serverQuote.timestamp > localQuote.timestamp) {
+        conflicts.push({ serverQuote, localQuote });
+        // Auto-resolve by keeping server version
+        const index = quotes.findIndex(q => q.id === serverQuote.id);
+        quotes[index] = serverQuote;
+      }
+    } else {
+      // New quote from server
+      quotes.push(serverQuote);
+    }
+  });
+  
+  if (conflicts.length > 0) {
+    showConflictUI(conflicts);
+  }
+}
+
+// Initialize sync
+document.addEventListener('DOMContentLoaded', () => {
+  // ... other initialization code ...
+  setInterval(syncQuotes, SYNC_INTERVAL);
+  syncQuotes(); // Initial sync
+});
 
