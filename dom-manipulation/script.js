@@ -60,7 +60,18 @@ function addQuote() {
     alert("Please fill in both fields.");
   }
 }
-<button onclick="exportToJsonFile()">Export Quotes</button>
+function exportToJsonFile() {
+  const dataStr = JSON.stringify(quotes);
+  const blob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "quotes.json";
+  link.click();
+
+  URL.revokeObjectURL(url);
+}
 function importFromJsonFile(event) {
   const fileReader = new FileReader();
   fileReader.onload = function (event) {
