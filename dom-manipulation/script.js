@@ -36,6 +36,45 @@ function addQuote() {
     alert("Please fill in both fields.");
   }
 }
+function saveQuotes() {
+  localStorage.setItem("quotes", JSON.stringify(quotes));
+}
+function loadQuotes() {
+  const storedQuotes = localStorage.getItem("quotes");
+  if (storedQuotes) {
+    quotes = JSON.parse(storedQuotes);
+  }
+}
+loadQuotes();
+function addQuote() {
+  const text = document.getElementById("quoteText").value;
+  const category = document.getElementById("quoteCategory").value;
+
+  if (text && category) {
+    quotes.push({ text, category });
+    saveQuotes();
+    alert("Quote added successfully!");
+    document.getElementById("quoteText").value = "";
+    document.getElementById("quoteCategory").value = "";
+  } else {
+    alert("Please fill in both fields.");
+  }
+}
+<button onclick="exportToJsonFile()">Export Quotes</button>
+function importFromJsonFile(event) {
+  const fileReader = new FileReader();
+  fileReader.onload = function (event) {
+    try {
+      const importedQuotes = JSON.parse(event.target.result);
+      quotes.push(...importedQuotes);
+      saveQuotes();
+      alert("Quotes imported successfully!");
+    } catch (e) {
+      alert("Invalid JSON file.");
+    }
+  };
+  fileReader.readAsText(event.target.files[0]);
+}
 // Initialize quotes array
 let quotes = [];
 
