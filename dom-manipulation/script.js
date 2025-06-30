@@ -791,4 +791,11 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(syncQuotes, SYNC_INTERVAL);
   syncQuotes(); // Initial sync
 });
+function showNotification(message, isError = false) {
+  const notification = document.createElement('div');
+  notification.className = `notification ${isError ? 'error' : 'success'}`;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+  setTimeout(() => notification.remove(), 3000);
+}
 
