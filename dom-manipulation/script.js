@@ -1,3 +1,41 @@
+// Array to hold quote objects
+let quotes = [
+  { text: "The only way to do great work is to love what you do.", category: "Motivation" },
+  { text: "In the middle of difficulty lies opportunity.", category: "Inspiration" },
+];
+
+// Function to show a random quote
+function showRandomQuote() {
+  const randomIndex = Math.floor(Math.random() * quotes.length);
+  const quoteDisplay = document.getElementById("quoteDisplay");
+  quoteDisplay.innerText = `"${quotes[randomIndex].text}" - (${quotes[randomIndex].category})`;
+}
+
+// Function to create a form for adding new quotes
+function createAddQuoteForm() {
+  const formContainer = document.getElementById("formContainer");
+
+  formContainer.innerHTML = `
+    <input type="text" id="quoteText" placeholder="Enter quote" required />
+    <input type="text" id="quoteCategory" placeholder="Enter category" required />
+    <button onclick="addQuote()">Add Quote</button>
+  `;
+}
+
+// Function to add a new quote
+function addQuote() {
+  const text = document.getElementById("quoteText").value;
+  const category = document.getElementById("quoteCategory").value;
+
+  if (text && category) {
+    quotes.push({ text, category });
+    alert("Quote added successfully!");
+    document.getElementById("quoteText").value = "";
+    document.getElementById("quoteCategory").value = "";
+  } else {
+    alert("Please fill in both fields.");
+  }
+}
 // Initialize quotes array
 let quotes = [];
 
